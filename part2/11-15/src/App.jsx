@@ -33,11 +33,11 @@ const App = () => {
 
     useEffect(() => {
         axios
-          .get('http://localhost:3001/persons')
-          .then(response => {
-            setContacts(response.data)
-            setFilteredContacts(response.data)
-          })
+            .get('http://localhost:3001/persons')
+            .then(response => {
+                setContacts(response.data)
+                setFilteredContacts(response.data)
+            })
     }, [])
 
     const addContact = (event) => {
@@ -50,10 +50,16 @@ const App = () => {
                 number: newNumber,
                 id: contacts.length + 1
             }
+
+            axios
+                .post('http://localhost:3001/persons', contactObject)
+                .then(response => {
+                    // console.log(response)
+                })
+
             const updatedContacts = contacts.concat(contactObject)
             setContacts(updatedContacts)
-            setFilteredContacts(filter === '' ? updatedContacts : updatedContacts.filter(contact => contact.name.toLowerCase().includes(filter)));
-
+            setFilteredContacts(filter === '' ? updatedContacts : updatedContacts.filter(contact => contact.name.toLowerCase().includes(filter)))
         }
         setNewName('')
         setNewNumber('')
