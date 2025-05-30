@@ -46,7 +46,17 @@ const App = () => {
     const addContact = (event) => {
         event.preventDefault()
         if (contacts.some(contact => contact.name.toLowerCase() == newName.toLowerCase())) {
-            alert(`${newName} is already added to phonebook`)
+            if (confirm(`${newName} is already added to phonebook. Replace the old number with a new one?`)) {
+                const contact = contacts.find(contact => contact.name.toLowerCase() == newName.toLowerCase())
+                const newContact = { ...contact, number: newNumber}
+                contactService
+                    .update(contact.id, newContact)
+                    .then(response => {
+                        const updatedContacts = contacts.map(item => item.id === contact.id ? response.data : item)
+                        setContacts(updatedContacts)
+                        setFilteredContacts(filter === '' ? updatedContacts : updatedContacts.filter(contact => contact.name.toLowerCase().includes(filter)))
+                    })
+            }
         } else {
             const contactObject = {
                 name: newName,
