@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import contactService from './services/contacts'
 
 const Filter = ({value, onChangeFilter}) => (
     <div>
@@ -19,8 +19,11 @@ const ContactForm = ({onSubmit, onChangeName, onChangeNumber, name, number}) => 
     </form>
 )
 
-const ContactsList = ({list}) => (
-    list.map((contact) => <p key={contact.name}>{contact.name} {contact.number}</p>)
+const ContactsList = ({list, removeContact}) => (
+    list.map((contact) => (
+            <p key={contact.name}>{contact.name} {contact.number} <button onClick={() => removeContact(contact.id, contact.name)}>delete</button></p>
+        )
+    )
 )
 
 const App = () => {
@@ -32,8 +35,8 @@ const App = () => {
     const [filter, setFilter] = useState('')
 
     useEffect(() => {
-        axios
-            .get('http://localhost:3001/persons')
+        contactService
+            .getAll()
             .then(response => {
                 setContacts(response.data)
                 setFilteredContacts(response.data)
@@ -48,14 +51,11 @@ const App = () => {
             const contactObject = {
                 name: newName,
                 number: newNumber,
-                id: contacts.length + 1
+                id: String(contacts.length + 1)
             }
 
-            axios
-                .post('http://localhost:3001/persons', contactObject)
-                .then(response => {
-                    // console.log(response)
-                })
+            contactService
+                .create(contactObject)
 
             const updatedContacts = contacts.concat(contactObject)
             setContacts(updatedContacts)
@@ -76,6 +76,14 @@ const App = () => {
         setFilter(filterValue)
         setFilteredContacts(filterValue === '' ? contacts : contacts.filter(contact => contact.name.toLowerCase().includes(filterValue)))
     }
+    const handleContactDelete = (id, name) => {
+        if (confirm(`Are you sure you want to delete ${name} from the phonebook?`)) {
+            contactService.remove(id)
+            const updatedContacts = contacts.filter(contact => contact.id !== id)
+            setContacts(updatedContacts)
+            setFilteredContacts(filter === '' ? updatedContacts : updatedContacts.filter(contact => contact.name.toLowerCase().includes(filter)))
+        }
+    }
 
     return (
         <div>
@@ -84,7 +92,7 @@ const App = () => {
             <h2>Add a new</h2>
             <ContactForm onSubmit={addContact} onChangeName={handleNameChange} onChangeNumber={handleNumberChange} name={newName} number={newNumber} />
             <h2>Numbers</h2>
-            <ContactsList list={filteredContacts} />
+            <ContactsList list={filteredContacts} removeContact={handleContactDelete} />
         </div>
     )
 }
