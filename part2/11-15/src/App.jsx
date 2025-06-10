@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import contactService from './services/contacts'
+import './index.css'
 
 const Filter = ({value, onChangeFilter}) => (
     <div>
@@ -26,6 +27,15 @@ const ContactsList = ({list, removeContact}) => (
     )
 )
 
+const Notification = ({ message }) => {
+    if (message === null) { return null}
+    return (
+        <div className='notification'>
+            {message}
+        </div>
+    )
+}
+
 const App = () => {
 
     const [contacts, setContacts] = useState([])
@@ -33,6 +43,8 @@ const App = () => {
     const [newName, setNewName] = useState('')
     const [newNumber, setNewNumber] = useState('')
     const [filter, setFilter] = useState('')
+
+    const [notification, setNotification] = useState(null)
 
     useEffect(() => {
         contactService
@@ -70,6 +82,11 @@ const App = () => {
             const updatedContacts = contacts.concat(contactObject)
             setContacts(updatedContacts)
             setFilteredContacts(filter === '' ? updatedContacts : updatedContacts.filter(contact => contact.name.toLowerCase().includes(filter)))
+
+            setNotification(`Added ${newName}`)
+            setTimeout(() => {
+                setNotification(null)
+            }, 5000)
         }
         setNewName('')
         setNewNumber('')
@@ -98,6 +115,7 @@ const App = () => {
     return (
         <div>
             <h1>Phonebook</h1>
+            <Notification message={notification} />
             <Filter value={filter} onChangeFilter={handleFilterChange} />
             <h2>Add a new</h2>
             <ContactForm onSubmit={addContact} onChangeName={handleNameChange} onChangeNumber={handleNumberChange} name={newName} number={newNumber} />
