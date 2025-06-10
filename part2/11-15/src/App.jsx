@@ -36,6 +36,15 @@ const Notification = ({ message }) => {
     )
 }
 
+const Error = ({ message }) => {
+    if (message === null) { return null}
+    return (
+        <div className='error'>
+            {message}
+        </div>
+    )
+}
+
 const App = () => {
 
     const [contacts, setContacts] = useState([])
@@ -45,6 +54,7 @@ const App = () => {
     const [filter, setFilter] = useState('')
 
     const [notification, setNotification] = useState(null)
+    const [error, setError] = useState(null)
 
     useEffect(() => {
         contactService
@@ -67,6 +77,11 @@ const App = () => {
                         const updatedContacts = contacts.map(item => item.id === contact.id ? response.data : item)
                         setContacts(updatedContacts)
                         setFilteredContacts(filter === '' ? updatedContacts : updatedContacts.filter(contact => contact.name.toLowerCase().includes(filter)))
+
+                        setNotification(`Updated ${newName}'s number`)
+                        setTimeout(() => {
+                            setNotification(null)
+                        }, 5000)
                     })
             }
         } else {
@@ -105,7 +120,14 @@ const App = () => {
     }
     const handleContactDelete = (id, name) => {
         if (confirm(`Are you sure you want to delete ${name} from the phonebook?`)) {
-            contactService.remove(id)
+            contactService
+                .remove(id)
+                .catch(error => {
+                    setError(`Information from ${name} has already been removed from the server`)
+                    setTimeout(() => {
+                        setError(null)
+                    }, 5000)
+                  })
             const updatedContacts = contacts.filter(contact => contact.id !== id)
             setContacts(updatedContacts)
             setFilteredContacts(filter === '' ? updatedContacts : updatedContacts.filter(contact => contact.name.toLowerCase().includes(filter)))
@@ -115,6 +137,7 @@ const App = () => {
     return (
         <div>
             <h1>Phonebook</h1>
+            <Error message={error} />
             <Notification message={notification} />
             <Filter value={filter} onChangeFilter={handleFilterChange} />
             <h2>Add a new</h2>
