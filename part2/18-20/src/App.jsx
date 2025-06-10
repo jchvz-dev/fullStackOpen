@@ -9,10 +9,11 @@ const FindCountries = ({value, onChangeFilter}) => (
     </div>
 )
 
-const CountriesList = ({data}) => {
-    if (data.length > 5) {
+const CountriesList = ({data, onClickShow}) => {
+
+    if (data.length === 1) {
         return (
-            <p>Too many matches. Specify another filter.</p>
+            <CountryData country={data[0]}/>
         )
     }
 
@@ -22,15 +23,15 @@ const CountriesList = ({data}) => {
         )
     }
 
-    if (data.length === 1) {
+    if (data.length > 5) {
         return (
-            <CountryData country={data[0]}/>
+            <p>Too many matches. Specify another filter.</p>
         )
     }
 
     return (
         <div>
-            {data.map((country) => <p key={country.name.common}>{country.name.common}</p>)}
+            {data.map((country) => <p key={country.name.common}>{country.name.common} <button onClick={() => onClickShow(country.name.common)}>Show</button></p>)}
         </div>
     )
 }
@@ -80,11 +81,16 @@ function App() {
         setFilteredCountries(filterValue === '' ? countries : countries.filter(country => country.name.common.toLowerCase().includes(filterValue.toLowerCase())))
     }
 
+    const handleOnClickShow = (countryName) => {
+        setFilter(countryName)
+        setFilteredCountries(countries.filter(country => country.name.common.includes(countryName)))
+    }
+
     return (
         <div>
 
             <FindCountries value={filter} onChangeFilter={handleFilterChange} />
-            <CountriesList data={filteredCountries}/>
+            <CountriesList data={filteredCountries} onClickShow={handleOnClickShow}/>
 
         </div>
     )
